@@ -35,7 +35,6 @@ public class MyUser implements UserDetails {
 
     @ManyToMany(mappedBy = "users", fetch = FetchType.EAGER)
     private List<Role> roles;
-
     public MyUser(String firstName, String lastName, String email, String password) {
         this.firstName = firstName;
         this.lastName = lastName;
