@@ -15,7 +15,8 @@ import java.util.UUID;
 @NoArgsConstructor
 public class Product {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "Product_Id_Generator")
+    @SequenceGenerator(name = "Product_Id_Generator", allocationSize = 1)
     private Long id;
 
     @Column(unique = true)

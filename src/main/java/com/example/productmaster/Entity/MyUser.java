@@ -1,14 +1,19 @@
 package com.example.productmaster.Entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Entity
 @Data
@@ -33,30 +38,39 @@ public class MyUser implements UserDetails {
 
     private boolean isUsing2FA;
 
-    @ManyToMany(mappedBy = "users", fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JsonManagedReference
     private List<Role> roles;
-    public MyUser(String firstName, String lastName, String email, String password) {
+
+    public MyUser(String firstName, String lastName, String email, String password, List<Role> roles) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.password = password;
         this.enabled = false;
-        this.isUsing2FA = false;
+        this.roles = roles;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return roles.stream()
+                .flatMap(role -> {
+                    Stream<GrantedAuthority> roleAuthority = Stream.of(new SimpleGrantedAuthority(role.getName()));
+                    Stream<GrantedAuthority> privilegeAuthorities = role.getPrivileges().stream()
+                            .map(privilege -> new SimpleGrantedAuthority(privilege.getName()));
+                    return Stream.concat(roleAuthority, privilegeAuthorities);
+                })
+                .collect(Collectors.toSet());
     }
 
     @Override
     public String getPassword() {
-        return "";
+        return this.password;
     }
 
     @Override
     public String getUsername() {
-        return "";
+        return this.email;
     }
 
     @Override
@@ -78,4 +92,18 @@ public class MyUser implements UserDetails {
     public boolean isEnabled() {
         return this.enabled;
     }
+
+    @Override
+    public String toString() {
+        return "UserDetails: {" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", email='" + email + '\'' +
+                ", password='[PROTECTED]'" +
+                ", enabled=" + enabled +
+                ", isUsing2FA=" + isUsing2FA +
+                '}';
+    }
+
 }

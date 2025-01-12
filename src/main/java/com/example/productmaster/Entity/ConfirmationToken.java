@@ -14,7 +14,8 @@ import java.util.UUID;
 @NoArgsConstructor
 public class ConfirmationToken {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "Confirmation_Token_Id_Generator")
+    @SequenceGenerator(name = "Confirmation_Token_Id_Generator", allocationSize = 1)
     private Long id;
 
     private String token;
