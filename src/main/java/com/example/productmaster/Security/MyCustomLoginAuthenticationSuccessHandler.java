@@ -6,36 +6,26 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.actuate.logging.LoggersEndpoint;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.RedirectStrategy;
-import org.springframework.security.web.WebAttributes;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 
 @Service
+@RequiredArgsConstructor
 public class MyCustomLoginAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(MyCustomLoginAuthenticationSuccessHandler.class);
 
     private final RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
-    private final ActiveUserStore activeUserStore;
     private final JWTService jwtService;
-    private final LoggersEndpoint loggersEndpoint;
-
-    public MyCustomLoginAuthenticationSuccessHandler(ActiveUserStore activeUserStore, JWTService jwtService, LoggersEndpoint loggersEndpoint) {
-        super();
-        this.activeUserStore = activeUserStore;
-        this.jwtService = jwtService;
-        this.loggersEndpoint = loggersEndpoint;
-    }
-
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -48,7 +38,7 @@ public class MyCustomLoginAuthenticationSuccessHandler implements Authentication
         addWelcomeCookie(getUsername(authentication), response);
 
         String targetUrl = determineTargetUrl(authentication);
-        logger.info("Redirecting to the " + targetUrl);
+        logger.info("Redirecting to the {}", targetUrl);
         redirectStrategy.sendRedirect(request, response, targetUrl);
     }
 
@@ -68,7 +58,7 @@ public class MyCustomLoginAuthenticationSuccessHandler implements Authentication
         }
     }
 
-    private final String getUsername(final Authentication authentication) {
+    private String getUsername(final Authentication authentication) {
         return ((MyUser) authentication.getPrincipal()).getUsername();
     }
 

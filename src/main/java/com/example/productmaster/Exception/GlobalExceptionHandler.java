@@ -84,4 +84,19 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
     }
 
+    @ExceptionHandler(FailedToSaveProductException.class)
+    public ResponseEntity<String> handleFailedToSaveProductException(FailedToSaveProductException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(NoProductFound.class)
+    public ResponseEntity<String> handleNoProductFound(NoProductFound ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<String> handleResourceNotFoundException(ResourceNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
 }

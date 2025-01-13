@@ -11,7 +11,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -40,15 +42,23 @@ public class MyUser implements UserDetails {
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JsonManagedReference
-    private List<Role> roles;
+    @JoinTable(uniqueConstraints = @UniqueConstraint(columnNames = {"users_id", "roles_id"}))
+    private Set<Role> roles = new HashSet<>();
 
-    public MyUser(String firstName, String lastName, String email, String password, List<Role> roles) {
+    public MyUser(String firstName, String lastName, String email, String password, Set<Role> roles) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.password = password;
         this.enabled = false;
         this.roles = roles;
+    }
+
+    public MyUser(Long id,String firstName, String lastName, String email) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.id = id;
     }
 
     @Override

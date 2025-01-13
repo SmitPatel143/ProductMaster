@@ -13,13 +13,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+
 
 @Service
+@Transactional
 public class AuthenticationService {
     private final Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
     private final UserRepo userRepo;
@@ -49,7 +53,7 @@ public class AuthenticationService {
         }
 
         Role roleUser = roleRepo.findByName("ROLE_USER");
-        List<Role> roles = List.of(roleUser);
+        Set<Role> roles = Set.of(roleUser);
         logger.info(String.valueOf(roles));
         MyUser currentUser = new MyUser(user.getFirstName(),
                 user.getLastName(),

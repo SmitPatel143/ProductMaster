@@ -1,11 +1,15 @@
 package com.example.productmaster.Entity;
 
+import com.example.productmaster.DTO.ProductDto;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,51 +24,49 @@ public class Product {
     private Long id;
 
     @Column(unique = true)
-    private String productId;
+    private String wsCode;
 
     private String name;
 
     private String description;
 
-    private String imageURL;
+    @OneToMany(mappedBy = "product", fetch = FetchType.EAGER)
+    private List<ProductImages> productImagesList;
 
     private float salesPrice;
 
-    private float MRP;
+    private int MRP;
 
     private int quantity;
 
     private float packageSize;
 
+    private boolean activeStatus;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
-    private List<Category> categoryList;
+    @ManyToOne(cascade = CascadeType.ALL)
+    private Category category;
 
-    public Product(String name, String description, String imageURL, float salesPrice, float packageSize, float MRP, List<Category> categoryList) {
-        this.name = name;
+    public Product(String name, String description, List<ProductImages> images, float salesPrice, int MRP, int quantity, float packageSize, Category category) {
+        this.name = sanitizeMedicineName(name);
         this.description = description;
-        this.imageURL = imageURL;
+        this.productImagesList = images;
         this.salesPrice = salesPrice;
         this.MRP = MRP;
         this.packageSize = packageSize;
-        this.categoryList = categoryList;
-        this.productId = productIdGenerator();
+        this.category = category;
+        this.wsCode = wsCodeGenerator(this.name);
+        this.activeStatus = true;
+        this.quantity = quantity;
     }
 
-    private String productIdGenerator() {
-        try {
-            String input = this.getName() + this.getMRP() + this.getQuantity() + UUID.randomUUID();
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(input.getBytes(StandardCharsets.UTF_8));
+    private String wsCodeGenerator(final String medicineName) {
+        String sanitizedMedicineName = sanitizeMedicineName(sanitizeMedicineName(medicineName));
+        String timestamp = new SimpleDateFormat("yyyyMMdd").format(new Date());
+        String uniqueSuffix = UUID.randomUUID().toString().substring(0, 8);
+        return "MED-" + sanitizedMedicineName + "-" + timestamp + "-" + uniqueSuffix;
+    }
 
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : hash) {
-                hexString.append(String.format("%02x", b));
-            }
-            return hexString.substring(0, 16);
-
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Error generating unique ID", e);
-        }
+    private String sanitizeMedicineName(final String medicineName) {
+        return medicineName.toUpperCase().replaceAll("[^A-Za-z0-9]", "_");
     }
 }

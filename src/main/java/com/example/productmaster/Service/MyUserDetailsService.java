@@ -1,5 +1,6 @@
 package com.example.productmaster.Service;
 
+import com.example.productmaster.DTO.UserDto;
 import com.example.productmaster.Entity.MyUser;
 import com.example.productmaster.Exception.UserNotFoundException;
 import com.example.productmaster.Repo.UserRepo;
@@ -27,9 +28,9 @@ public class MyUserDetailsService implements UserDetailsService {
         return userRepo.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("User not found with this email"));
     }
 
-    public Optional<MyUser> getAllUsers() {
+    public List<MyUser> getAllUsers() {
         try {
-            Optional<MyUser> users = userRepo.findByEmail("smit.p@medkart.in");
+            List<MyUser> users = userRepo.findAll();
             if (users.isEmpty())
                 throw new UserNotFoundException("User not found");
             return users;

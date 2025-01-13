@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Slf4j
-@RestController
+@RestController("/user")
 public class UserController {
 
     private final MyUserDetailsService myUserDetailsService;
@@ -21,10 +21,5 @@ public class UserController {
         this.myUserDetailsService = myUserDetailsService;
     }
 
-    @GetMapping("/allUser")
-    public ResponseEntity<?> allUser() {
-        log.info("Get all user");
-        Optional<MyUser> users = myUserDetailsService.getAllUsers();
-        return ResponseEntity.ok(users);
-    }
+
 }
