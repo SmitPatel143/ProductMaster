@@ -12,5 +12,6 @@ public class CategoryDto {
     private String categoryId;
     private String name;
     private String description;
+    private boolean active;
 
 }

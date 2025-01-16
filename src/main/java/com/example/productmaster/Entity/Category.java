@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.checkerframework.common.aliasing.qual.Unique;
 
 import java.util.List;
 import java.util.Random;
@@ -17,16 +18,19 @@ public class Category {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "Category_Id_Generator")
-    @SequenceGenerator(name = "UserDetails_Id_Generator", allocationSize = 1)
+    @SequenceGenerator(name = "Category_Id_Generator", allocationSize = 1)
     private Long id;
 
     private String categoryId;
 
+    @Column(unique = true)
     private String name;
 
     private String description;
 
-    @OneToMany(mappedBy = "category",fetch = FetchType.LAZY)
+    private boolean active;
+
+    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
     private List<Product> productList;
 
     public Category(String name, String description) {
@@ -39,10 +43,11 @@ public class Category {
         this.name = categoryDto.getName();
         this.description = categoryDto.getDescription();
         this.categoryId = generateCategoryId();
+        this.active = categoryDto.isActive();
     }
 
     private String generateCategoryId() {
-        return "CAT" + this.getName().substring(0,3).toUpperCase() + getRandomString();
+        return "CAT" + this.getName().substring(0, 3).toUpperCase() + getRandomString();
     }
 
     private String getRandomString() {

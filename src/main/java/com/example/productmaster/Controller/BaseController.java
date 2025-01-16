@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 @Controller
 public class BaseController {
 
-
     @GetMapping("/{fileName}")
     String getTemplate(@PathVariable String fileName) {
         return fileName;

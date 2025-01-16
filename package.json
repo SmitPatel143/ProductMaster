@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "dom": "^0.0.3",
+    "react": "^19.0.0",
+    "react-icon": "^1.0.0",
+    "webpack-dev-server": "^5.2.0",
+    "writer": "^1.0.0"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.0",
+    "tailwindcss": "^3.4.17"
+  }
+}

@@ -21,13 +21,14 @@ public class SecurityConfig {
 
     private final AuthenticationProvider authenticationProvider;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final MyCustomLoginAuthenticationSuccessHandler authenticationSuccessHandler;
-    private final CustomAuthenticationFailure authenticationFailure;
+    private final CustomAuthenticationSuccessHandler authenticationSuccessHandler;
+    private final CustomAuthenticationFailureHandler authenticationFailure;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
+                .cors(Customizer.withDefaults())
                 .securityContext((securityContext) -> securityContext.requireExplicitSave(true))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/user/login", "/user/register", "/user/register/confirm","/resources/**","homepage.html","/static/**","/admin/**").permitAll()
@@ -37,8 +38,6 @@ public class SecurityConfig {
                 .formLogin(form ->
                         form.loginPage("/user/login")
                                 .loginProcessingUrl("/user/login")
-                                .defaultSuccessUrl("/homepage.html",true)
-                                .failureUrl("/user/login?error=true")
                                 .successHandler(authenticationSuccessHandler)
                                 .failureHandler(authenticationFailure)
                                 .permitAll()
@@ -59,4 +58,6 @@ public class SecurityConfig {
         return (web) -> web.ignoring()
                 .requestMatchers(new AntPathRequestMatcher("/resources/**", "/h2/**"));
     }
+
+
 }

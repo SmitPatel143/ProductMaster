@@ -6,13 +6,13 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
@@ -20,16 +20,14 @@ import java.util.Map;
 import java.util.function.Function;
 
 @Service
+@NoArgsConstructor
+@Data
 public class JWTService {
     @Value("${jwt.secret}")
     private String secretKey;
 
     @Value("360000000")
     private long jwtExpirationTime;
-
-    public JWTService() {
-
-    }
 
     public SecretKey getSecretKey() {
         byte[] encodedKey = Base64.getDecoder().decode(secretKey);
@@ -51,10 +49,6 @@ public class JWTService {
 
     public String generateToken(Map<String, Object> extractClaims, UserDetails user) {
         return buildToken(extractClaims, user, jwtExpirationTime);
-    }
-
-    public long getExpirationTime() {
-        return jwtExpirationTime;
     }
 
     private String buildToken(Map<String, Object> claims, UserDetails user, long expirationTime) {

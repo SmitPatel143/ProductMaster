@@ -1,67 +1,57 @@
 package com.example.productmaster.Service;
 
+import com.example.productmaster.DTO.ApiResponse;
 import com.example.productmaster.DTO.RegisterUser;
 import com.example.productmaster.Entity.ConfirmationToken;
 import com.example.productmaster.Entity.MyUser;
-import com.example.productmaster.Entity.Role;
-import com.example.productmaster.Exception.*;
+import com.example.productmaster.Exception.ConfirmationTokenExpiredException;
 import com.example.productmaster.Repo.ConfirmationTokenRepo;
 import com.example.productmaster.Repo.RoleRepo;
 import com.example.productmaster.Repo.UserRepo;
 import jakarta.servlet.http.HttpServletRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-
 @Service
 @Transactional
+@RequiredArgsConstructor
+@Slf4j
 public class AuthenticationService {
-    private final Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
     private final UserRepo userRepo;
     private final BCryptPasswordEncoder passwordEncoder;
     private final RoleRepo roleRepo;
     private final EmailService emailService;
     private final ConfirmationTokenRepo tokenRepo;
 
-    public AuthenticationService(UserRepo userRepo, BCryptPasswordEncoder passwordEncoder, EmailService emailService, ConfirmationTokenRepo tokenRepository, RoleRepo roleRepo) {
-        this.userRepo = userRepo;
-        this.passwordEncoder = passwordEncoder;
-        this.emailService = emailService;
-        this.tokenRepo = tokenRepository;
-        this.roleRepo = roleRepo;
-    }
-
-    public String registerNewUserAccount(RegisterUser user, HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<String>> registerNewUserAccount(RegisterUser user, HttpServletRequest request) {
 
         Optional<MyUser> existingUser = userRepo.findByEmail(user.getEmail());
 
         if (existingUser.isPresent()) {
             MyUser alreadyRegisteredUser = existingUser.get();
             if (alreadyRegisteredUser.isEnabled()) {
-                throw new UserIsAlreadyRegisteredException("User already registered and confirmed.");
+                log.warn("{} is already registered.", alreadyRegisteredUser.getEmail());
+                return new ResponseEntity<>(setApiResponse(HttpStatus.CONFLICT.value(), "User already registered and confirmed.", null), HttpStatus.CONFLICT);
             }
             return resendConfirmationEmail(alreadyRegisteredUser, request);
         }
-
-        Role roleUser = roleRepo.findByName("ROLE_USER");
-        Set<Role> roles = Set.of(roleUser);
-        logger.info(String.valueOf(roles));
         MyUser currentUser = new MyUser(user.getFirstName(),
                 user.getLastName(),
                 user.getEmail(),
-                passwordEncoder.encode(user.getPassword()), roles);
+                passwordEncoder.encode(user.getPassword()),
+                Set.of(roleRepo.findByName("ROLE_USER")));
         userRepo.save(currentUser);
-        return sendingConfirmationEmail(currentUser, request);
-
+        return new ResponseEntity<>(setApiResponse(HttpStatus.CREATED.value(), sendingConfirmationEmail(currentUser, request), null), HttpStatus.CREATED);
     }
 
     public String confirmUser(String token) {
@@ -78,19 +68,19 @@ public class AuthenticationService {
         return "User has been confirmed successfully";
     }
 
-    private String resendConfirmationEmail(MyUser user, HttpServletRequest request) {
+    private ResponseEntity<ApiResponse<String>> resendConfirmationEmail(MyUser user, HttpServletRequest request) {
         ConfirmationToken existingToken = tokenRepo.getByUserId(user.getId());
-        if (existingToken != null && existingToken.getExpiresAt().isAfter(LocalDateTime.now())) {
-            return "A confirmation email has already been sent to your email address. Please check your inbox.";
-        }
 
-        if (existingToken != null) {
+        if (existingToken != null && existingToken.getExpiresAt().isAfter(LocalDateTime.now()))
+            return new ResponseEntity<>(setApiResponse(HttpStatus.CONFLICT.value(), "A confirmation email has already been sent to your email address. Wait for 24 Hours to resend the mail", null), HttpStatus.CONFLICT);
+
+        if (existingToken != null)
             tokenRepo.deleteByUser(user);
-        }
+
         ConfirmationToken newToken = creatingConfirmationToken(user);
         tokenRepo.save(newToken);
         sendingMail(newToken, request, user.getEmail());
-        return "User has been registered successfully, Please check your email to confirm your account";
+        return new ResponseEntity<>(setApiResponse(HttpStatus.CREATED.value(), "User has been registered successfully, Please check your email to confirm your account", null), HttpStatus.CREATED);
     }
 
     private String sendingConfirmationEmail(MyUser user, HttpServletRequest request) {
@@ -121,5 +111,9 @@ public class AuthenticationService {
 
     private ConfirmationToken creatingConfirmationToken(MyUser user) {
         return new ConfirmationToken(user);
+    }
+
+    private <T> ApiResponse<T> setApiResponse(final int value, final String message, final T data) {
+        return new ApiResponse<>(value, message, data);
     }
 }

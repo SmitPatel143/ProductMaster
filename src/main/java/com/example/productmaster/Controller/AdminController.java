@@ -35,7 +35,7 @@ public class AdminController {
     private final RoleRepo roleRepo;
 
     @PostMapping("/assignRole")
-    public ResponseEntity<?> addRoleToUser(@Valid RoleDto roleDto) {
+    public ResponseEntity<?> addRoleToUser(@Valid @RequestBody RoleDto roleDto) {
         MyUser user = userRepo.findById(roleDto.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("Failed to assign role. User not found"));
         Role role = roleRepo.findById(roleDto.getRoleId())
@@ -60,7 +60,7 @@ public class AdminController {
     }
 
     @PostMapping("/products/update")
-    public ResponseEntity<?> updateProduct(@RequestBody ProductDto productDto) {
+    public ResponseEntity<?> updateProduct(@Valid @RequestBody ProductDto productDto) {
         adminService.updateProduct(productDto);
         return ResponseEntity.status(HttpStatus.OK).body("Product updated");
     }
@@ -72,21 +72,29 @@ public class AdminController {
     }
 
     @PostMapping("/products/save")
-    public ResponseEntity<?> saveProduct(@RequestBody ProductDto productDto) {
-        log.info(productDto.toString());
-        ProductDto p1 = new ProductDto();
-        p1.setMRP(1000);
-        log.info("{} {}", p1.getMRP(), productDto.getMRP());
-        System.out.println("value of the mrp is: "+productDto.getMRP());
+    public ResponseEntity<?> saveProduct(@Valid @RequestBody ProductDto productDto) {
         adminService.saveProduct(productDto);
         return ResponseEntity.status(HttpStatus.OK).body("Product saved");
     }
 
-    @PostMapping("/products/category/save")
-    public ResponseEntity<?> saveCategory(@RequestBody CategoryDto categoryDto){
-        log.info(categoryDto.toString());
-        adminService.saveCategory(categoryDto);
-        return ResponseEntity.status(HttpStatus.OK).body("Category saved");
+    @PostMapping("/category/save")
+    public ResponseEntity<?> saveCategory(@Valid @RequestBody CategoryDto categoryDto){
+        return adminService.saveCategory(categoryDto);
     }
+
+//    @PostMapping("/category/update")
+//    public ResponseEntity<?> updateCategory(@Valid @RequestBody CategoryDto categoryDto){
+//
+//    }
+//
+//    @PostMapping("/category/deactivation")
+//    public ResponseEntity<?> deactivateCategory(@Valid @RequestBody CategoryDto categoryDto){
+//
+//    }
+//
+//    @PostMapping("category/get")
+//    public ResponseEntity<?> getCategory(@Valid @RequestBody CategoryDto categoryDto){
+//
+//    }
 
 }

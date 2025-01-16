@@ -1,16 +1,21 @@
 package com.example.productmaster.Service;
 
+import com.example.productmaster.DTO.ApiResponse;
 import com.example.productmaster.DTO.CategoryDto;
 import com.example.productmaster.DTO.ProductDto;
 import com.example.productmaster.Entity.Category;
 import com.example.productmaster.Entity.Product;
 import com.example.productmaster.Entity.ProductImages;
+import com.example.productmaster.Exception.CategoryNotFoundException;
 import com.example.productmaster.Exception.FailedToSaveProductException;
 import com.example.productmaster.Exception.ResourceNotFoundException;
 import com.example.productmaster.Repo.CategoryRepo;
 import com.example.productmaster.Repo.ProductRepo;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,7 +35,7 @@ public class AdminService {
                 .map(ProductImages::new)
                 .toList();
 
-        Product product = new Product(productDto.getName(), productDto.getDescription(), productImagesList, productDto.getSalesPrice(),productDto.getMRP(), productDto.getQuantity(), productDto.getPackageSize(), category);
+        Product product = new Product(productDto.getName(), productDto.getDescription(), productImagesList, productDto.getSalesPrice(), productDto.getMRP(), productDto.getQuantity(), productDto.getPackageSize(), category);
 
         try {
             productRepo.save(product);
@@ -64,13 +69,30 @@ public class AdminService {
 
     }
 
-    public void saveCategory(CategoryDto categoryDto) {
+    public ResponseEntity<ApiResponse<String>> saveCategory(CategoryDto categoryDto) {
         try {
             categoryRepo.save(new Category(categoryDto));
+            return new ResponseEntity<>(setApiResponse(201, "Category Saved Successfully !", null), HttpStatus.CREATED);
+        } catch (DataIntegrityViolationException e) {
+            log.error("Category already exists {}", categoryDto.getName());
+            return new ResponseEntity<>(setApiResponse(409, "Category already exists", null), HttpStatus.CONFLICT);
         } catch (Exception e) {
             log.error("Failed to save category", e);
-            throw new FailedToSaveProductException("Failed to save category");
+            return new ResponseEntity<>(setApiResponse(500, "Failed to save category", null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    public void updateCategory(CategoryDto categoryDto) {
+        Category category = categoryRepo.findByCategoryId(categoryDto.getCategoryId()).orElseThrow(() -> new CategoryNotFoundException("Failed to save category, Please try again later"));
+        try {
+            categoryRepo.saveAndFlush(category);
+        } catch (Exception e) {
+            throw new FailedToSaveProductException("Failed to update the category, Please try again later");
+        }
+    }
+
+    private <T> ApiResponse<T> setApiResponse(final int value, final String message, final T data) {
+        return new ApiResponse<>(value, message, data);
     }
 
 }

@@ -3,6 +3,7 @@ package com.example.productmaster.Security;
 import com.example.productmaster.Entity.MyUser;
 import com.example.productmaster.Service.JWTService;
 import com.example.productmaster.Service.MyUserDetailsService;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -13,6 +14,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
 
 
 @Component
@@ -30,7 +33,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response, FilterChain filterChain){
+    protected void doFilterInternal(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response, FilterChain filterChain) throws IOException {
         final String authorizationHeader = request.getHeader("Authorization");
         String token = null, username = null;
 
@@ -42,7 +45,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             if (username != null && authentication == null) {
-
+                logger.info("User {} logged in", username);
+                logger.info(token);
                 MyUser user = (MyUser) userDetailsService.loadUserByUsername(username);
                 if (jwtService.isTokenValid(token, user)) {
                     UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
@@ -51,9 +55,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
             filterChain.doFilter(request, response);
-        } catch (Exception e) {
+        }catch (ExpiredJwtException e){
+            logger.error("Token expired, redirecting to login: {}", e.getMessage());
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setHeader("Token-Expired", "true");
+            response.sendRedirect("/login");
+        }
+        catch (Exception e) {
             logger.error(e.getMessage(), e);
-            throw new RuntimeException(e);
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN); // 403 Forbidden
+            response.sendRedirect("/login");
         }
     }
 }
