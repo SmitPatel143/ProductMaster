@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -41,6 +42,7 @@ public class ProductService {
         return new ResponseEntity<>(setApiResponse(HttpStatus.OK.value(), "Product Available !", activeProductList), HttpStatus.OK);
     }
 
+    @Transactional
     public ResponseEntity<?> saveProductsIntoCart(CartDto cart) {
         MyUser user = (MyUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         log.info(cart.toString());
@@ -50,13 +52,17 @@ public class ProductService {
 
         try {
             Cart userCart = cartRepo.findByUser(user);
-            if (userCart == null)
+            if (userCart == null) {
                 userCart = new Cart(user);
-            if (cartItemsRepo.findByProductWsCodeAndCart(cart.getProductId(), userCart) != null)
+                cartRepo.save(userCart);
+            }
+            List<CartItems> cartItems1 = cartItemsRepo.findByProductWsCodeAndCart(cart.getProductId(), userCart);
+            if (!cartItemsRepo.findByProductWsCodeAndCart(cart.getProductId(), userCart).isEmpty())
                 return new ResponseEntity<>(setApiResponse(HttpStatus.CONFLICT.value(), "Product already added", null), HttpStatus.CONFLICT);
+
             CartItems cartItems = new CartItems(productRepo.getProductsByWsCode(cart.getProductId()), cart.getQuantity(), cart.getTotalPrice(), userCart);
             cartItemsRepo.save(cartItems);
-            cartRepo.save(userCart);
+
             return new ResponseEntity<>(setApiResponse(HttpStatus.OK.value(), "Product added", null), HttpStatus.OK);
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -70,6 +76,32 @@ public class ProductService {
         if (cartItems.isEmpty())
             return new ResponseEntity<>(setApiResponse(HttpStatus.NOT_FOUND.value(), "", null), HttpStatus.NOT_FOUND);
         return new ResponseEntity<>(setApiResponse(HttpStatus.OK.value(), "", cartItems), HttpStatus.OK);
+    }
+
+    public ResponseEntity<?> updateProductQuantityInUserCart(CartDto cart) {
+        try {
+            Optional<CartItems> cartItems = cartItemsRepo.findById(cart.getCartId());
+
+            if (cartItems.isEmpty())
+                return new ResponseEntity<>(setApiResponse(HttpStatus.NOT_FOUND.value(), "", null), HttpStatus.NOT_FOUND);
+
+            CartItems cartItem = cartItems.get();
+            cartItem.setQuantity(cart.getQuantity());
+            cartItem.setTotalPrice(cart.getTotalPrice());
+            cartItemsRepo.save(cartItem);
+            return new ResponseEntity<>(setApiResponse(HttpStatus.OK.value(), "", null), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(setApiResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal server error", null), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public ResponseEntity<?> removeFromCart(Long CartId) {
+        try {
+            cartItemsRepo.deleteById(CartId);
+            return new ResponseEntity<>(setApiResponse(HttpStatus.OK.value(), "", null), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(setApiResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     private <T> ApiResponse<T> setApiResponse(final int value, final String message, final T data) {

@@ -2,6 +2,7 @@ package com.example.productmaster.Controller;
 
 
 import com.example.productmaster.DTO.CartDto;
+import com.example.productmaster.DTO.ProductDto;
 import com.example.productmaster.Repo.CartItemsRepo;
 import com.example.productmaster.Repo.CartRepo;
 import com.example.productmaster.Repo.ProductRepo;
@@ -36,7 +37,15 @@ public class ProductController {
         return productService.fetchUserCart(username);
     }
 
+    @PostMapping("/updateQuantity")
+    private ResponseEntity<?> updateProductQuantityInCart(@RequestBody CartDto cartDto) {
+        return productService.updateProductQuantityInUserCart(cartDto);
+    }
 
+    @DeleteMapping("/removeFromCart/{cartId}")
+    private ResponseEntity<?> removeProductFromCart(@PathVariable Long cartId) {
+        return productService.removeFromCart(cartId);
+    }
 
 
 }

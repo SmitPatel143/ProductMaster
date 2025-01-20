@@ -1,5 +1,6 @@
 package com.example.productmaster.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,6 +19,7 @@ public class ProductImages {
     private String imageURL;
 
     @ManyToOne
+    @JsonIgnore
     private Product product;
 
     public ProductImages(String imageURL) {

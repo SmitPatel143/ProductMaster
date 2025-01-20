@@ -31,7 +31,6 @@ public class Product {
 
     private String description;
 
-    @JsonIgnore
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     private List<ProductImages> productImagesList;
 

@@ -12,7 +12,7 @@ import java.util.List;
 @Repository
 public interface CartItemsRepo extends JpaRepository<CartItems, Long> {
 
-    CartItems findByProductWsCodeAndCart(String productWsCode, Cart cart);
+    List<CartItems> findByProductWsCodeAndCart(String productWsCode, Cart cart);
 
     @Query("SELECT ci FROM CartItems ci " +
             "JOIN ci.cart c " +

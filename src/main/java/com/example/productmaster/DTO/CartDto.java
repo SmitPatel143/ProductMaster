@@ -12,4 +12,5 @@ public class CartDto {
     private int quantity;
     private double totalPrice;
     private String username;
+    private Long cartId;
 }
