@@ -23,7 +23,7 @@ public class Cart {
     @JsonIgnore
     private MyUser user;
 
-    @OneToMany(mappedBy = "cart")
+    @OneToMany(mappedBy = "cart", orphanRemoval = true)
     @JsonIgnore
     private List<CartItems> cartItems;
 

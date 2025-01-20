@@ -1,11 +1,7 @@
 package com.example.productmaster.Controller;
-
-
 import com.example.productmaster.DTO.CartDto;
-import com.example.productmaster.DTO.ProductDto;
-import com.example.productmaster.Repo.CartItemsRepo;
-import com.example.productmaster.Repo.CartRepo;
-import com.example.productmaster.Repo.ProductRepo;
+import com.example.productmaster.DTO.OrderDto;
+import com.example.productmaster.Service.OrderService;
 import com.example.productmaster.Service.ProductService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,9 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 public class ProductController {
     private ProductService productService;
-    private ProductRepo productRepo;
-    private CartRepo cartRepo;
-    private CartItemsRepo cartItemsRepo;
+    private OrderService orderService;
 
     @GetMapping("/getAll")
     private ResponseEntity<?> getAllActiveProducts() {
@@ -45,6 +39,11 @@ public class ProductController {
     @DeleteMapping("/removeFromCart/{cartId}")
     private ResponseEntity<?> removeProductFromCart(@PathVariable Long cartId) {
         return productService.removeFromCart(cartId);
+    }
+
+    @PostMapping("/placeOrder")
+    private ResponseEntity<?> placeOrder(@RequestBody OrderDto order) {
+        return orderService.placeOrder(order.getCartId(), order.getTotalPrice());
     }
 
 

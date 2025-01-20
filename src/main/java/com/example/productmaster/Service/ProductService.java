@@ -11,6 +11,7 @@ import com.example.productmaster.Repo.CartRepo;
 import com.example.productmaster.Repo.CategoryRepo;
 import com.example.productmaster.Repo.ProductRepo;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,14 +24,14 @@ import java.util.Optional;
 
 @Service
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Transactional
 public class ProductService {
 
-    private ProductRepo productRepo;
-    private CategoryRepo categoryRepo;
-    private CartRepo cartRepo;
-    private CartItemsRepo cartItemsRepo;
+    private final ProductRepo productRepo;
+    private final CategoryRepo categoryRepo;
+    private final CartRepo cartRepo;
+    private final CartItemsRepo cartItemsRepo;
 
 
     public ResponseEntity<ApiResponse<?>> getAllActiveProducts() {
@@ -103,6 +104,7 @@ public class ProductService {
             return new ResponseEntity<>(setApiResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
     private <T> ApiResponse<T> setApiResponse(final int value, final String message, final T data) {
         return new ApiResponse<>(value, message, data);

@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.cglib.core.Local;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collection;
 
@@ -25,29 +26,36 @@ public class Order {
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private MyUser user;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "address_id",  referencedColumnName = "id")
-    private Address address;
-
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private Collection<OrderItems> orderItems;
 
     private LocalDateTime orderDate;
 
-    private float totalAmount;
+    @Column(nullable = false)
+    private BigDecimal totalAmount;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private PaymentStatus paymentStatus;
 
-
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private OrderStatus status;
 
     private LocalDateTime updatedAt;
 
-    @OneToOne
-    @JoinColumn(name = "paymentDetails_id", referencedColumnName = "id")
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "payment_details_id", referencedColumnName = "id")
     private PaymentDetails paymentDetails;
+
+    public Order(MyUser user, Collection<OrderItems> orderItems, BigDecimal totalAmount, PaymentStatus paymentStatus, OrderStatus status) {
+        this.user = user;
+        this.orderItems = orderItems;
+        this.totalAmount = totalAmount;
+        this.paymentStatus = paymentStatus;
+        this.status = status;
+        this.orderItems.forEach(item -> item.setOrder(this));
+    }
 
     @PrePersist
     protected void onCreate() {
