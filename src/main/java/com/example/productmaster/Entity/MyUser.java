@@ -1,5 +1,6 @@
 package com.example.productmaster.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -42,6 +43,7 @@ public class MyUser implements UserDetails {
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JsonManagedReference
+    @JsonIgnore
     @JoinTable(uniqueConstraints = @UniqueConstraint(columnNames = {"users_id", "roles_id"}))
     private Set<Role> roles = new HashSet<>();
 

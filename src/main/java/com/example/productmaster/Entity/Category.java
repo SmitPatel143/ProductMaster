@@ -1,6 +1,7 @@
 package com.example.productmaster.Entity;
 
 import com.example.productmaster.DTO.CategoryDto;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -31,6 +32,7 @@ public class Category {
     private boolean active;
 
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Product> productList;
 
     public Category(String name, String description) {
@@ -65,4 +67,6 @@ public class Category {
                 ", description='" + description + '\'' +
                 '}';
     }
+
+
 }

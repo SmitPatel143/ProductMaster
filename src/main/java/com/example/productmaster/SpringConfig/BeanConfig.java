@@ -67,9 +67,9 @@ public class BeanConfig {
                 HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD,
                 HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS,
                 HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS,
-                HttpHeaders.AUTHORIZATION));
+                HttpHeaders.AUTHORIZATION, HttpHeaders.COOKIE,HttpHeaders.SET_COOKIE));
         corsConfiguration.setExposedHeaders(Arrays.asList("Origin", "Content-Type", "Accept",
-                "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Access-Control-Allow-Credentials","Authorization"));
+                "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Access-Control-Allow-Credentials","Authorization",HttpHeaders.SET_COOKIE, HttpHeaders.COOKIE));
         corsConfiguration.setAllowedMethods(Arrays.asList("Access-Control-Allow-Methods",
                 "GET", "POST", "PUT", "DELETE", "OPTIONS"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

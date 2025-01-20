@@ -65,7 +65,7 @@ const SignUp = () => {
             </div>
             <form onSubmit={handleFormSubmit} className="space-y-4">
                 <div className="flex items-center space-x-3">
-                    <img src={user_icon} alt="user" className="w-5 h-5" />
+                    <img src={user_icon} alt="user" className="w-5 h-5"/>
                     <input
                         type="text"
                         placeholder="First Name"
@@ -77,7 +77,7 @@ const SignUp = () => {
                     />
                 </div>
                 <div className="flex items-center space-x-3">
-                    <img src={user_icon} alt="user" className="w-5 h-5" />
+                    <img src={user_icon} alt="user" className="w-5 h-5"/>
                     <input
                         type="text"
                         placeholder="Last Name"
@@ -89,7 +89,7 @@ const SignUp = () => {
                     />
                 </div>
                 <div className="flex items-center space-x-3">
-                    <img src={email_icon} alt="email" className="w-5 h-5" />
+                    <img src={email_icon} alt="email" className="w-5 h-5"/>
                     <input
                         type="email"
                         placeholder="Email"
@@ -101,7 +101,7 @@ const SignUp = () => {
                     />
                 </div>
                 <div className="flex items-center space-x-3">
-                    <img src={password_icon} alt="password" className="w-5 h-5" />
+                    <img src={password_icon} alt="password" className="w-5 h-5"/>
                     <input
                         type="password"
                         placeholder="Password"
@@ -123,6 +123,11 @@ const SignUp = () => {
                     >
                         {isLoading ? 'Signing Up...' : 'Sign Up'}
                     </button>
+                </div>
+                <div className="mt-6 text-center">
+                    <p className="text-sm text-gray-600">Already have an account? <a href="/login"
+                                                                                   className="text-blue-500 hover:text-blue-600">Login
+                    </a></p>
                 </div>
             </form>
         </div>

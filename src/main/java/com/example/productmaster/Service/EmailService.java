@@ -26,7 +26,7 @@ public class EmailService {
 
             helper.setTo(to);
             helper.setSubject(subject);
-            helper.setText(content, true); // Set 'true' to enable HTML content
+            helper.setText(content, true);
 
             mailSender.send(message);
         } catch (MessagingException | RuntimeException e) {

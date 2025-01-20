@@ -17,11 +17,32 @@ public class CartItems {
     @SequenceGenerator(name = "CartItems_Id_Generator", allocationSize = 1)
     private Long id;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "cartItemProductId")
-    private Collection<Product> products;
+    @ManyToOne
+    @JoinColumn(name = "product_id", referencedColumnName = "id")
+    private Product product;
+
+    @ManyToOne
+    private Cart cart;
 
     private int quantity;
 
-    private Double price;
+    private Double totalPrice;
+
+
+    public CartItems(Product product, int quantity, Double totalPrice, Cart cart) {
+        this.product = product;
+        this.quantity = quantity;
+        this.totalPrice = totalPrice;
+        this.cart =cart;
+    }
+
+    @Override
+    public String toString() {
+        return "CartItems{" +
+                "id=" + id +
+                ", product=" + product.toString() +
+                ", quantity=" + quantity +
+                ", totalPrice=" + totalPrice +
+                '}';
+    }
 }

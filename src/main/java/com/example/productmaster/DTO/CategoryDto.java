@@ -14,4 +14,9 @@ public class CategoryDto {
     private String description;
     private boolean active;
 
+    public CategoryDto(String categoryId, String name, String description) {
+        this.categoryId = categoryId;
+        this.name = name;
+        this.description = description;
+    }
 }

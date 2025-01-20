@@ -1,9 +1,6 @@
 package com.example.productmaster.Controller;
 
-import com.example.productmaster.DTO.CategoryDto;
-import com.example.productmaster.DTO.ProductDto;
-import com.example.productmaster.DTO.RoleDto;
-import com.example.productmaster.DTO.UserDto;
+import com.example.productmaster.DTO.*;
 import com.example.productmaster.Entity.MyUser;
 import com.example.productmaster.Entity.Role;
 import com.example.productmaster.Repo.RoleRepo;
@@ -20,10 +17,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
+
 
 @Slf4j
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasRole('ROLE_ADMIN')")
 @RestController
 @RequestMapping("/admin/")
 @RequiredArgsConstructor
@@ -54,32 +51,42 @@ public class AdminController {
         return ResponseEntity.ok(users);
     }
 
-    @GetMapping("/products/get")
+    @GetMapping("/products/getAll")
     public ResponseEntity<?> getAllProducts() {
-        return ResponseEntity.status(HttpStatus.OK).body(adminService.getAllActiveProducts());
+        log.info("Get all products");
+        return adminService.getAllProducts();
+    }
+
+    @GetMapping("/products/getByWsCode/{wsCode}")
+    public ResponseEntity<?> getProductsByWsCode(@PathVariable String wsCode) {
+        log.info("Get all products by wsCode: {}", wsCode);
+        return adminService.getProductByWsCode(wsCode);
     }
 
     @PostMapping("/products/update")
     public ResponseEntity<?> updateProduct(@Valid @RequestBody ProductDto productDto) {
-        adminService.updateProduct(productDto);
-        return ResponseEntity.status(HttpStatus.OK).body("Product updated");
+        return adminService.updateProduct(productDto);
     }
 
-    @PostMapping("/products/deactivation")
-    public ResponseEntity<?> deactivationOfProduct(@RequestBody String wsCode) {
-        adminService.deactivateProduct(wsCode);
-        return ResponseEntity.status(HttpStatus.OK).body("Product deactivated");
+    @DeleteMapping("/products/deactivation/{wsCode}")
+    public ResponseEntity<?> deactivationOfProduct(@PathVariable String wsCode) {
+        return adminService.deactivateProduct(wsCode);
     }
 
     @PostMapping("/products/save")
     public ResponseEntity<?> saveProduct(@Valid @RequestBody ProductDto productDto) {
-        adminService.saveProduct(productDto);
-        return ResponseEntity.status(HttpStatus.OK).body("Product saved");
+        log.info(productDto.toString());
+        return adminService.saveProduct(productDto);
     }
 
     @PostMapping("/category/save")
-    public ResponseEntity<?> saveCategory(@Valid @RequestBody CategoryDto categoryDto){
+    public ResponseEntity<?> saveCategory(@Valid @RequestBody CategoryDto categoryDto) {
         return adminService.saveCategory(categoryDto);
+    }
+
+    @GetMapping ("/category/getAll")
+    public ResponseEntity<?> getAllCategory() {
+        return adminService.getAllActiveCategories();
     }
 
 //    @PostMapping("/category/update")

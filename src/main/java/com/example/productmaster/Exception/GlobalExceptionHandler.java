@@ -1,6 +1,7 @@
 package com.example.productmaster.Exception;
 
 
+import com.example.productmaster.DTO.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -49,6 +50,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<String> handleUserNotFoundException(UserNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<?> handleIllegalArgumentException(IllegalArgumentException ex) {
+        return new ResponseEntity<>(setApiResponse(HttpStatus.NOT_ACCEPTABLE.value(),"Please enter valid input", null), HttpStatus.NOT_ACCEPTABLE);
     }
 
     @ExceptionHandler(ConfirmationTokenExpiredException.class)
@@ -104,6 +110,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CategoryNotFoundException.class)
     public ResponseEntity<String> handleCategoryNotFoundException(CategoryNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    private <T> ApiResponse<T> setApiResponse(final int value, final String message, final T data) {
+        return new ApiResponse<>(value, message, data);
     }
 
 }

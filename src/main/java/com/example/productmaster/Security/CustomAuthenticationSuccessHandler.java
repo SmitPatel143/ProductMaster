@@ -11,8 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.web.DefaultRedirectStrategy;
-import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Service;
 
@@ -23,8 +21,6 @@ import java.io.IOException;
 public class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(CustomAuthenticationSuccessHandler.class);
-
-    private final RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
     private final JWTService jwtService;
 
     @Override
@@ -32,47 +28,30 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
 
         MyUser user = (MyUser) authentication.getPrincipal();
         String token = jwtService.generateToken(user);
+
+        response.addCookie(getWelcomeCookie(getUsername(authentication)));
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        response.getWriter().write(
-                "{\"" + HttpHeaders.AUTHORIZATION + "\":\"" + "Bearer " + token + "\"}"
+
+        String jsonResponse = String.format(
+                "{\"" + HttpHeaders.AUTHORIZATION + "\":\"%s\", \"username\":\"%s\"}",
+                "Bearer " + token,
+                getUsername(authentication)
         );
-        logger.info(token);
-        addWelcomeCookie(getUsername(authentication), response);
-
-//        String targetUrl = determineTargetUrl(authentication);
-//        redirectStrategy.sendRedirect(request, response, targetUrl);
-    }
-
-    private String determineTargetUrl(Authentication authentication) {
-        logger.info(authentication.getAuthorities().toString());
-        boolean isAdmin = authentication.getAuthorities().stream()
-                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"));
-        boolean isUser = authentication.getAuthorities().stream()
-                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_USER"));
-
-        if (isAdmin) {
-            return "/admin/dashboard";
-        } else if (isUser) {
-            return "/homepage.html";
-        } else {
-            throw new IllegalStateException("User has no valid roles!");
-        }
+        response.getWriter().write(jsonResponse);
     }
 
     private String getUsername(final Authentication authentication) {
         return ((MyUser) authentication.getPrincipal()).getUsername();
     }
 
-    private void addWelcomeCookie(final String user, final HttpServletResponse response) {
-        Cookie welcomeCookie = getWelcomeCookie(user);
-        response.addCookie(welcomeCookie);
-    }
-
     private Cookie getWelcomeCookie(final String user) {
-        Cookie welcomeCookie = new Cookie("welcome", user);
-        welcomeCookie.setMaxAge(60 * 60 * 24 * 30); // 30 days
-        return welcomeCookie;
+        Cookie usernameCookie = new Cookie("username", user);
+        usernameCookie.setPath("/");
+        usernameCookie.setHttpOnly(false);  // Allow JavaScript access
+        usernameCookie.setSecure(false);    // Set to true in production with HTTPS
+        usernameCookie.setMaxAge(60 * 60 * 24); // 24 hours
+        return usernameCookie;
     }
 
 }
