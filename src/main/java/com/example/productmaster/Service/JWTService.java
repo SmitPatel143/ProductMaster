@@ -1,6 +1,7 @@
 package com.example.productmaster.Service;
 
 import com.example.productmaster.Entity.MyUser;
+import com.example.productmaster.Entity.Role;
 import com.example.productmaster.Exception.TokenExpiredException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -13,11 +14,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
-import java.util.Base64;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @NoArgsConstructor
@@ -34,6 +33,12 @@ public class JWTService {
         return Keys.hmacShaKeyFor(encodedKey);
     }
 
+    @SuppressWarnings("unchecked")
+    public Set<String> extractRoles(String token) {
+        ArrayList<String> roles = extractClaim(token, claims -> claims.get("roles", ArrayList.class));
+        return roles != null ? new HashSet<>(roles) : new HashSet<>();
+    }
+
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
@@ -44,7 +49,13 @@ public class JWTService {
     }
 
     public String generateToken(MyUser user) {
-        return generateToken(new HashMap<>(), user);
+        Map<String, Object> claims = new HashMap<>();
+        List<String> rolesNames = user.getRoles().stream()
+                        .map(Role::getName)
+                                .toList();
+        claims.put("roles", rolesNames);
+        claims.put("userId", user.getId());
+        return generateToken(claims, user);
     }
 
     public String generateToken(Map<String, Object> extractClaims, UserDetails user) {
@@ -65,7 +76,15 @@ public class JWTService {
 
     public boolean isTokenValid(String token, MyUser user) {
         final String username = extractUsername(token);
-        return username.equals(user.getEmail()) && !isTokenExpired(token);
+        final Set<String> tokenRoles = extractRoles(token);
+
+        List<String> userRoles = user.getRoles().stream()
+                .map(Role::getName)
+                .toList();
+        return username.equals(user.getEmail()) &&
+                new HashSet<>(tokenRoles).containsAll(userRoles) &&
+                new HashSet<>(userRoles).containsAll(tokenRoles) &&
+                !isTokenExpired(token);
     }
 
     private boolean isTokenExpired(String token) {
@@ -90,4 +109,5 @@ public class JWTService {
         }
 
     }
+
 }
