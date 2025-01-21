@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -35,14 +36,15 @@ public class MyUser implements UserDetails {
 
     private String email;
 
+    @ToString.Exclude
     private String password;
 
     private boolean enabled;
 
     private boolean isUsing2FA;
 
+    @ToString.Exclude
     @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JsonManagedReference
     @JsonIgnore
     @JoinTable(uniqueConstraints = @UniqueConstraint(columnNames = {"users_id", "roles_id"}))
     private Set<Role> roles = new HashSet<>();
@@ -62,6 +64,7 @@ public class MyUser implements UserDetails {
         this.email = email;
         this.id = id;
     }
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

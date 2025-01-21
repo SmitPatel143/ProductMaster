@@ -67,4 +67,17 @@ public class Order {
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
+    @Override
+    public String toString() {
+        return "Order{" +
+                "id=" + id +
+                ", user=" + (user != null ? user.getUsername() : null) +
+                ", orderDate=" + orderDate +
+                ", totalAmount=" + totalAmount +
+                ", paymentStatus=" + paymentStatus +
+                ", status=" + status +
+                '}';
+    }
+
 }

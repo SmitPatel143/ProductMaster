@@ -1,6 +1,8 @@
 package com.example.productmaster.Controller;
 import com.example.productmaster.DTO.CartDto;
 import com.example.productmaster.DTO.OrderDto;
+import com.example.productmaster.Entity.MyUser;
+import com.example.productmaster.Repo.UserRepo;
 import com.example.productmaster.Service.OrderService;
 import com.example.productmaster.Service.ProductService;
 import lombok.AllArgsConstructor;
@@ -8,11 +10,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @Slf4j
 @RestController
 @RequestMapping("/product")
 @AllArgsConstructor
 public class ProductController {
+    private final UserRepo userRepo;
     private ProductService productService;
     private OrderService orderService;
 
@@ -26,8 +31,8 @@ public class ProductController {
         return productService.saveProductsIntoCart(cart);
     }
 
-    @GetMapping("/fetchUserCart/{username}")
-    private ResponseEntity<?> fetchUserCart(@PathVariable String username) {
+    @GetMapping("/fetchUserCart")
+    private ResponseEntity<?> fetchUserCart(@RequestParam String username) {
         return productService.fetchUserCart(username);
     }
 
@@ -45,6 +50,14 @@ public class ProductController {
     private ResponseEntity<?> placeOrder(@RequestBody OrderDto order) {
         return orderService.placeOrder(order.getCartId(), order.getTotalPrice());
     }
+
+    @GetMapping("/fetchUserOrder/{userId}")
+    private ResponseEntity<?> fetchUserOrder(@PathVariable Long userId) {
+        return orderService.fetchOrderByUserId(userId);
+
+    }
+
+
 
 
 }
